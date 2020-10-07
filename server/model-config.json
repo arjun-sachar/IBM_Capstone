@@ -1,0 +1,5 @@
+{
+  "_meta": {
+    "DeveloperNote": "This file should be empty! Add your model configuration to model-config.local.js instead so the datasource can be dynamic based upon environment variables!"
+  }
+}
