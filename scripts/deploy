@@ -1,0 +1,115 @@
+#!/usr/bin/env perl
+
+use Modern::Perl;
+use Template;
+use FindBin;
+
+my @valid_envs = ( 'dev', 'test', 'uat', 'prod' );
+
+my @cf_commands = ( 'cf', 'ibmcloud', 'bx' );
+my $cf_command;
+my $cf_target_command;
+for my $_cf_command (@cf_commands) {
+    my $rc = system("command -v $_cf_command > /dev/null");
+    if ( $rc == 0 ) {
+
+        if ( $_cf_command eq 'ibmcloud' ) {
+            $cf_command        = "ibmcloud cf";
+            $cf_target_command = "ibmcloud";
+        }
+        elsif ( $_cf_command eq 'bx' ) {
+            $cf_command        = "bx cf";
+            $cf_target_command = 'bx';
+        }
+        else {
+            $cf_command        = $_cf_command;
+            $cf_target_command = $_cf_command;
+        }
+        last;
+    }
+}
+
+if ( !defined($cf_command) ) {
+    say( "Cant find valid 'cf' command. Tried the following commands: "
+            . join( ", ", @cf_commands ) );
+    exit(1);
+}
+
+my ($env) = @ARGV;
+
+my $path = "$FindBin::Bin/..";
+
+sub usage {
+    my $error = shift;
+
+    if ( defined($error) ) {
+        say("Error: $error");
+    }
+
+    say("Usage: scripts/deploy environment\n\nExample: scripts/deploy dev\n\nValid environment names: "
+            . join( ', ', @valid_envs ) );
+    exit(1);
+}
+
+sub execute {
+    my $command = shift;
+
+    say("Executing: $command\n");
+    system($command);
+}
+
+sub confirm {
+    my $msg           = shift;
+    my $continue_word = 'continue';
+    say($msg);
+    say("Type the word '$continue_word' if you want to keep going.");
+    print("-> ");
+    my $answer = <STDIN>;
+    chomp $answer;
+
+    if ( $answer ne $continue_word ) {
+        say("Aborting!");
+        exit(1);
+    }
+}
+
+sub set_manifest {
+    my $tt = Template->new( ABSOLUTE => 1 );
+
+    my $url_replacement    = "-$env";
+    my $memory_replacement = "256M";
+
+    if ( $env eq 'prod' ) {
+        $url_replacement    = '';
+        $memory_replacement = '8000M';
+    }
+
+    my %data = (
+        env    => $url_replacement,
+        memory => $memory_replacement
+    );
+    $tt->process( "$path/manifest.yml.tt", \%data, 'manifest.yml' )
+        || die $tt->error;
+}
+
+sub deploy {
+    say("Building Vue application...");
+    execute("npm run vue-build");
+
+    say("Using '$env' config...");
+
+    say("Pushing...");
+    execute("$cf_command push");
+}
+
+usage() if !defined($env) or $env eq '--help' or $env eq '-h';
+
+unless ( grep( /^$env$/, @valid_envs ) ) {
+    usage("Invalid environment name '$env'");
+}
+
+set_manifest();
+confirm("You are about to deploy to prod!") if ( $env eq 'prod' );
+deploy();
+
+say("---------------\n\nAll Done!\n\n");

@@ -1,0 +1,9 @@
+applications:
+- path: .
+  memory: [% memory %]
+  instances: 1
+  disk_quota: 1024M
+  domain: mybluemix.net
+  name: dashblocksV2[% env %]
+  host: dashblocksV2[% env %]
+  command: npm start

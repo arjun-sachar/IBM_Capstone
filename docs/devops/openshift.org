@@ -1,0 +1,30 @@
+1. Copy login command from Openshift and paste in terminal (top right corner of dashboard): *oc login https://openshift.deo.fdc.ibm.com --token=2NJoLDyV2tBXQ0W27jzHj5gqPlPEXLFTzfofWtf_xRs*
+2. *oc new-app --source-secret="dfas-access-token" git@github.ibm.com:AACoC/dfas-ui.git --name="dfas-ui"*
+   1. *dfas-access-token* is a Secret that has been created in the OpenShift dashboard (Resources -> Secrets -> Create Secret. Source Secret -> Basic Authentication -> Username = Github/IBM email / Password = Github Personal Access Token)
+3. Open newly created Build in OpenShift dashboard (Builds -> Builds), click the new Build, click Actions on the top right, and click Edit. Change Github URL to be the https URL instead of ssh URL (eg: https://github.ibm.com/AACoC/dfas-ui.git) and click Save
+4. Go to your Overview, expand the newly created Application, and click "Create Route". Check the "Secure route" input, and then under Insecure Traffic select "Allow". Create the route.
+
+
+## Example DockerFiles
+
+
+### Dashblocks 1 Dockerfile
+#+BEGIN_SRC dockerfile
+FROM node:8.16.0-jessie
+
+WORKDIR /home/node/app
+
+EXPOSE 2000
+
+COPY package*.json bower.json .bowerrc gulpfile.js /home/node/app/
+
+RUN npm install --unsafe-perm
+
+COPY . .
+
+RUN npm run compile
+
+CMD [ "npm", "start" ]
+#+END_SRC
+
+### Dashblocks 2 Dockerfile coming soon
