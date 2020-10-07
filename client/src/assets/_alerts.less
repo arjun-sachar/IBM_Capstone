@@ -1,0 +1,50 @@
+.alert-container {
+  overflow-y: auto;
+  max-height: 100px;
+
+  .alert-bar {
+    width: 100%;
+    padding: 10px;
+    background: #6f6d6d;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    border-bottom: 1px dotted #979797;
+    height: 40px;
+
+    .alert-bar--icon {
+      color: #fbd900;
+    }
+
+    .alert-bar--text {
+      margin-left: 20px;
+      color: #fff;
+    }
+
+    .alert-bar--actions {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+
+      .alert-bar--actions-icon {
+        position: relative;
+        top: 2px;
+        font-size: 25px;
+
+        &.alert-bar--actions-icon__success {
+          color: #00d528;
+        }
+
+        &.alert-bar--actions-icon__danger {
+          color: red;
+        }
+      }
+
+      .alert-bar--actions-button {
+        font-size: 10px;
+        margin-left: 10px;
+      }
+    }
+  }
+}
